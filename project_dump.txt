@@ -1,0 +1,127 @@
+engine.py
+```
+# engine.py
+from characters import Player, Enemy
+from scenes import SceneRepository
+
+class GameEngine:
+    def __init__(self):
+       # Hard-code some starter data for now
+        hero = Player(name="Ada", level=1, health=5)
+        hero.inventory.append("rusty sword")
+        print(hero)  # thanks to @dataclass, this is readable
+
+        # Temporary: spawn a goblin to prove Enemy works
+        goblin = Enemy(name="Goblin", level=1, health=3, loot=["gold coin"])
+        print(goblin)
+        # ─── Lesson 5: repository-driven story ───
+        self.repo = SceneRepository()
+        current_scene, current_turn = "intro", "start"
+
+        print("\nStory begins:")
+        while current_turn:
+            turn = self.repo.get_turn(current_scene, current_turn)
+            # Show prompt
+            print("\n" + turn["prompt"])
+
+            # ─── NEW: menu & branching ───
+            if "choices" in turn:                 # interactive turn
+                for key, choice in turn["choices"].items():
+                    print(f"[{key}] {choice['label']}")
+                choice_key = input("> ").strip().lower()
+                while choice_key not in turn["choices"]:
+                    print("Please pick one of the listed options.")
+                    choice_key = input("> ").strip().lower()
+                current_scene, current_turn = turn["choices"][choice_key]["next"]
+            else:                                 # non-interactive (old style)
+                input("\nPress Enter to continue...\n")
+                current_scene, current_turn = turn.get("next", (None, None))
+        # ─── end Lesson 5 block ───
+
+if __name__ == "__main__":
+    GameEngine()```
+
+scenes.py
+```
+# scenes.py
+import json
+import pathlib
+from typing import Dict, Any
+
+DATA_DIR = pathlib.Path(__file__).parent / "data"
+
+class SceneRepository:
+    """Loads scene JSON on demand and caches it."""
+    def __init__(self):
+        self._cache: Dict[str, Dict[str, Any]] = {}
+
+    def get_turn(self, scene: str, turn: str) -> Dict[str, Any]:
+        if scene not in self._cache:
+            file_path = DATA_DIR / f"{scene}.json"
+            print(f"[DEBUG] loading {file_path.name}")
+            with open(file_path, encoding="utf-8") as f:
+                self._cache[scene] = json.load(f)["turns"]
+        return self._cache[scene][turn]
+```
+
+characters.py
+```
+# characters.py
+from dataclasses import dataclass, field
+from typing import List
+
+@dataclass
+class Character:
+    name: str
+    level: int
+    health: int
+
+@dataclass
+class Player(Character):
+    # Use default_factory so each player gets a new list
+    inventory: List[str] = field(default_factory=list)
+
+@dataclass
+class Enemy(Character):
+    # Items the player can collect after defeating this foe
+    loot: List[str] = field(default_factory=list)```
+
+data/intro.json
+```
+{
+  "scene": "intro",
+  "turns": {
+    "start": {
+      "prompt": "You wake up in a dark forest. A narrow path splits.",
+      "choices": {
+        "l": { "label": "Go left",  "next": ["intro", "wolf"] },
+        "r": { "label": "Go right", "next": ["intro", "pond"] }
+      }
+    },
+
+    "wolf": {
+      "prompt": "A hungry wolf snarls at you! (Nothing you can do yet…)",
+      "next": ["intro", "start"]
+    },
+
+    "pond": {
+      "prompt": "You find a quiet pond and feel refreshed.",
+      "next": ["intro", "start"]
+    }
+  }
+}
+```
+
+data/village.json
+```
+{
+  "scene": "village",
+  "turns": {
+    "start": {
+      "prompt": "You arrive at a sleepy village. A cat stares suspiciously.",
+      "next": [null, null]
+    }
+  }
+}
+```
+

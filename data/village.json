@@ -1,0 +1,9 @@
+{
+  "scene": "village",
+  "turns": {
+    "start": {
+      "prompt": "You arrive at a sleepy village. A cat stares suspiciously.",
+      "next": [null, null]
+    }
+  }
+}
