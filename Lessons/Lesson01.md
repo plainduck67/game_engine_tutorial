@@ -23,7 +23,7 @@ You’ll create your very first **dataclass** — a `Player` object that will ev
 1. **Create a new file `characters.py` in the project root.**
    Add the following code:
 
-   ```py
+   ```python
    # characters.py
    from dataclasses import dataclass, field
    from typing import List
@@ -43,19 +43,16 @@ You’ll create your very first **dataclass** — a `Player` object that will ev
 2. **Update `engine.py` to use `Player`.**
    Replace its contents with the small test harness below (we’ll rebuild the engine later):
 
-   ```diff
-   -class GameEngine:
-   -    def __init__(self):
-   -        print("hello world")
-   +from characters import Player
-   +
-   +class GameEngine:
-   +    def __init__(self):
-   +        # Hard-code some starter data for now
-   +        hero = Player(name="Ada", level=1, health=5)
-   +        print(hero)          # thanks to @dataclass, this is readable
-   +
-   +
+   ```python
+   from characters import Player
+
+   class GameEngine:
+       def __init__(self):
+           # Hard-code some starter data for now
+           hero = Player(name="Ada", level=1, health=5)
+           print(hero)          # thanks to @dataclass, this is readable
+
+
    if __name__ == "__main__":
        GameEngine()
    ```
@@ -65,7 +62,7 @@ You’ll create your very first **dataclass** — a `Player` object that will ev
 4. **Experiment with mutability.**
    Inside `engine.py`, right after you create `hero`, add:
 
-   ```py
+   ```python
    hero.inventory.append("rusty sword")
    print(hero)
    ```
@@ -101,4 +98,4 @@ Player(name='Ada', level=1, health=5, inventory=['rusty sword'])
 
 ### Recap & What’s Next
 
-Great job! You used `@dataclass` to slash boilerplate and learned why `field(default_factory=list)` keeps each player’s gear separate. In the next lesson you’ll expand the `characters.py` module with an `Enemy` class and wire up basic combat logic. Adventure awaits!
+Great job! You used `@dataclass` to slash boilerplate and learned why `field(default_factory=list)` keeps each player’s gear separate. In the next lesson you’ll expand the `characters.py` module with an `Enemy` class and wire up basic combat
